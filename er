@@ -1,0 +1,55 @@
+import qrcode
+import cv2
+import numpy as np
+
+# Generate a QR Code with unique identifier
+def generate_qr_code(data, filename="qrcode.png"):
+    # Initialize QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4,
+    )
+    
+    # Add data to the QR code
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    # Create an image of the QR code
+    img = qr.make_image(fill='black', back_color='white')
+    img.save(filename)
+    print(f"QR code generated and saved as {filename}")
+
+# Verification logic using OpenCV
+def verify_qr_code(filename="qrcode.png", expected_data=""):
+    # Load the image
+    img = cv2.imread(filename)
+    # Initialize OpenCV QRCode detector
+    detector = cv2.QRCodeDetector()
+    
+    # Detect and decode the QR code
+    data, vertices, _ = detector.detectAndDecode(img)
+    
+    # Check if QR code is found
+    if vertices is not None:
+        print("QR code detected.")
+        if data == expected_data:
+            print("Verification successful. Data matches expected value.")
+            return True
+        else:
+            print("Verification failed. Data does not match.")
+            return False
+    else:
+        print("No QR code detected.")
+        return False
+
+# Example usage:
+unique_id = "Product-Auth-12345"  # Unique identifier for the QR code
+generate_qr_code(unique_id, "product_qr.png")
+verification_result = verify_qr_code("product_qr.png", expected_data=unique_id)
+
+if verification_result:
+    print("Product authentication successful!")
+else:
+    print("Product authentication failed.")
